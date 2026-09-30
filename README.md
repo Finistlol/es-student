@@ -17,7 +17,6 @@
 
 ## Статус проверок
 
-Замените `ЛОГИН` на ваш логин GitHub, иначе значки не отобразятся.
 
 ![](https://github.com/ЛОГИН/es-student/actions/workflows/check-1-1-1.yml/badge.svg)
 ![](https://github.com/ЛОГИН/es-student/actions/workflows/check-1-1-2.yml/badge.svg)
