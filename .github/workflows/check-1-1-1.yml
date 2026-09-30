@@ -1,0 +1,18 @@
+name: 1.1.1 Установка инструментов
+
+on:
+  push:
+    paths:
+      - 'tools.log'
+      - '.github/workflows/check-1-1-1.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: ant-lab-ru/es-test/.github/workflows/check-1-1-1.yml@master
+    secrets:
+      ES_ACCOUNT_SECRET: ${{ secrets.ES_ACCOUNT_SECRET }}
