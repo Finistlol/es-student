@@ -1,0 +1,28 @@
+задание: 2.1.1
+проект: 211-command-usb
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-10-04T20:18:33
+   0.000 --> enable
+   0.001 <-- enable
+   0.002 <-- dbg read_line:94 got enable
+   0.002 <-- inf cmd_enable:18 led on
+   2.028 --> disable
+   2.029 <-- disable
+   2.029 <-- dbg read_line:94 got disable
+   2.030 <-- inf cmd_disable:24 led off
+   4.040 --> info
+   4.041 <-- info
+   4.042 <-- dbg read_line:94 got info
+   4.043 <-- project: 211-command-usb
+   4.045 <-- repo: https://github.com/Finistlol/es-student
+   4.046 <-- board: pico
+   4.047 <-- serial: 5303284728F62C9C
+   4.050 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   4.050 <-- pico-sdk: 2.3.0
+   6.075 --> nosuchcommand
+   6.075 <-- nosuchcommand
+   6.076 <-- dbg read_line:94 got nosuchcommand
+   6.077 <-- err handle_command:125 unknown command: nosuchcommand
+итог: отправлено команд 4, принято строк 17
