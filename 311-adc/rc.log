@@ -1,0 +1,4 @@
+R_kohm = 10.3
+C_uf = 100.0
+tau_charge_s = 1.120
+tau_discharge_s = 1.220
