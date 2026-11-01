@@ -1,0 +1,66 @@
+задание: 3.2.1
+проект: 321-audio-recorder
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-01T19:55:44
+   0.000 --> help
+   0.003 <-- help
+   0.003 <-- help             list of commands
+   0.003 <-- info             device passport
+   0.003 <-- uptime           time since reset
+   0.003 <-- led_enable       turn LED on
+   0.003 <-- led_disable      turn LED off
+   0.003 <-- led_blink        blink LED
+   0.003 <-- led_period       set blink period, ms
+   0.003 <-- button           button state and press count
+   0.003 <-- pi_start         start pi calculation
+   0.003 <-- pi               last pi result
+   0.003 <-- profiling        stopwatch results
+   0.003 <-- profiling_reset  reset stopwatches
+   0.003 <-- get_voltage      voltage on GP26, V
+   0.003 <-- get_temp         chip temperature, C
+   0.058 <-- tm_start         start telemetry stream
+   0.058 <-- tm_stop          stop telemetry stream
+   0.058 <-- charge_on        charge RC circuit
+   0.058 <-- timer_blink_start blink LED by timer, ms
+   0.058 <-- timer_blink_stop stop timer blink
+   0.058 <-- charge_off       discharge RC circuit
+   1.056 --> info
+   1.118 <-- info
+   1.118 <-- name: es-audio-recorder
+   1.118 <-- version: 1.0.0
+   1.118 <-- project: 321-audio-recorder
+   1.118 <-- repo: https://github.com/Finistlol/es-student
+   1.118 <-- board: pico
+   1.118 <-- serial: 5303284728F62C9C
+   1.118 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   1.118 <-- pico-sdk: 2.3.0
+   2.118 --> timer_blink_start 250
+   2.181 <-- timer_blink_start 250
+   2.181 <-- timer_blink: started, period 250 ms
+   2.432 --> uptime
+   2.494 <-- uptime
+   2.494 <-- uptime: 8454 ms
+   2.993 --> pi_start
+   3.054 <-- pi_start
+   3.054 <-- pi: started, 1000000 terms
+   3.553 --> pi
+   3.615 <-- pi
+   3.615 <-- pi: running
+   4.115 --> timer_blink_stop
+   4.178 <-- timer_blink_stop
+   4.178 <-- timer_blink: stopped, 8 toggles
+   4.676 --> timer_blink_start 100
+   4.739 <-- timer_blink_start 100
+   4.739 <-- timer_blink: started, period 100 ms
+   4.989 --> timer_blink_stop
+   5.051 <-- timer_blink_stop
+   5.051 <-- timer_blink: stopped, 3 toggles
+   5.548 --> timer_blink_start 5
+   5.611 <-- timer_blink_start 5
+   5.611 <-- error: period_ms must be 10..60000
+   6.111 --> timer_blink_start
+   6.173 <-- timer_blink_start
+   6.173 <-- error: usage timer_blink_start <period_ms>
+итог: отправлено кадров 11, принято строк 48
