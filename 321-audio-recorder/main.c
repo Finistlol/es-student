@@ -39,9 +39,9 @@ static void telemetry_line(const telemetry_sample_t *sample)
 
 // Пакет потока уходит в порт байтами без замены: связь задачи с отправкой
 // задаёт main, двоичные данные отправляет platform.
-static void stream_send(const stream_packet_t *packet, uint16_t len)
+static void stream_send(const uint8_t *packet, uint16_t len)
 {
-    platform_send_bytes((const uint8_t *)packet, len);
+    platform_send_bytes(packet, len);
 }
 
 int main(void)

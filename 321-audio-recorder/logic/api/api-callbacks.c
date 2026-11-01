@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "device/device.h"
 #include "platform/platform.h"
@@ -332,15 +333,27 @@ static void cmd_dma_cap(const command_t *command)
 
 static void cmd_stream_start(const command_t *command)
 {
-    (void)command;
+    bool eight_bit = false;
 
-    if (!stream_task_start())
+    if (command->argc > 1 ||
+        (command->argc == 1 && strcmp(command->argv[0], "8") != 0))
+    {
+        printf("error: usage stream_start [8]\n");
+        return;
+    }
+
+    if (command->argc == 1)
+    {
+        eight_bit = true;
+    }
+
+    if (!stream_task_start(eight_bit))
     {
         printf("error: stream is already running\n");
         return;
     }
 
-    printf("stream: started, 44100 Hz, 16 bit\n");
+    printf("stream: started, 44100 Hz, %u bit\n", eight_bit ? 8u : 16u);
 }
 
 static void cmd_stream_stop(const command_t *command)

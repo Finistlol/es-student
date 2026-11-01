@@ -48,11 +48,14 @@ void platform_dma_capture_result(uint32_t *samples, uint32_t *elapsed_us, const 
 
 // --- 3.2.4: поток с двойной буферизацией ---
 
-#define PLATFORM_STREAM_SAMPLES 512
+#define PLATFORM_STREAM_SAMPLES_16 512
+#define PLATFORM_STREAM_SAMPLES_8 1024
 
-bool platform_stream_start(void);
+// eight_bit: false — поток 16 бит по 512 отсчётов, true — 8 бит по 1024.
+bool platform_stream_start(bool eight_bit);
 void platform_stream_stop(void);
-bool platform_stream_take(const uint16_t **samples);
+bool platform_stream_take(const uint8_t **bytes, uint16_t *samples);
+uint8_t platform_stream_bits(void);
 uint32_t platform_stream_overruns(void);
 void platform_send_bytes(const uint8_t *data, uint16_t len);
 

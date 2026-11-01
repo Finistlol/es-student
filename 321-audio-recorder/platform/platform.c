@@ -299,11 +299,12 @@ void platform_dma_capture_result(uint32_t *samples, uint32_t *elapsed_us, const 
 
 // --- 3.2.4: поток с двойной буферизацией ---
 
-static uint16_t stream_buf[2][PLATFORM_STREAM_SAMPLES];
+static uint8_t stream_buf[2][PLATFORM_STREAM_SAMPLES_8];
 static volatile bool stream_ready[2] = {false, false};
 static volatile uint32_t stream_overruns = 0;
 static int stream_channels[2] = {-1, -1};
 static bool stream_running = false;
+static uint8_t stream_bits = 16;
 
 // Оба канала сидят на одной линии DMA_IRQ_1: обработчик разбирает,
 // какой канал закончил, и возвращает ему начало его буфера —
@@ -335,7 +336,7 @@ static void __isr stream_handler(void)
     }
 }
 
-bool platform_stream_start(void)
+bool platform_stream_start(bool eight_bit)
 {
     if (stream_running)
     {
@@ -354,29 +355,37 @@ bool platform_stream_start(void)
     stream_ready[0] = false;
     stream_ready[1] = false;
     stream_overruns = 0;
+    stream_bits = eight_bit ? 8 : 16;
+
+    // В 8-битном потоке АЦП сдвигает результат на 4 разряда — старшие
+    // 8 бит кода уходят в буфер FIFO байтом, и DMA передаёт байты.
+    // В 16-битном FIFO отдаёт полное 12-разрядное слово.
+    adc_fifo_setup(true, true, 1, false, eight_bit);
 
     // Оба канала по запросу АЦП, каждый передаёт запрос другому по цепочке.
     dma_channel_config config_a = dma_channel_get_default_config(stream_channels[0]);
-    channel_config_set_transfer_data_size(&config_a, DMA_SIZE_16);
+    channel_config_set_transfer_data_size(&config_a, eight_bit ? DMA_SIZE_8 : DMA_SIZE_16);
     channel_config_set_read_increment(&config_a, false);
     channel_config_set_write_increment(&config_a, true);
     channel_config_set_dreq(&config_a, DREQ_ADC);
     channel_config_set_chain_to(&config_a, stream_channels[1]);
 
     dma_channel_config config_b = dma_channel_get_default_config(stream_channels[1]);
-    channel_config_set_transfer_data_size(&config_b, DMA_SIZE_16);
+    channel_config_set_transfer_data_size(&config_b, eight_bit ? DMA_SIZE_8 : DMA_SIZE_16);
     channel_config_set_read_increment(&config_b, false);
     channel_config_set_write_increment(&config_b, true);
     channel_config_set_dreq(&config_b, DREQ_ADC);
     channel_config_set_chain_to(&config_b, stream_channels[0]);
 
-    adc_fifo_setup(true, true, 1, false, false);
     adc_set_clkdiv(48000000.0f / ADC_SAMPLE_HZ - 1.0f);
 
+    // Число передач = числу отсчётов: байт в 8-битном потоке,
+    // полуслово в 16-битном.
+    uint32_t transfers = eight_bit ? PLATFORM_STREAM_SAMPLES_8 : PLATFORM_STREAM_SAMPLES_16;
     dma_channel_configure(stream_channels[0], &config_a,
-                          stream_buf[0], &adc_hw->fifo, PLATFORM_STREAM_SAMPLES, false);
+                          stream_buf[0], &adc_hw->fifo, transfers, false);
     dma_channel_configure(stream_channels[1], &config_b,
-                          stream_buf[1], &adc_hw->fifo, PLATFORM_STREAM_SAMPLES, false);
+                          stream_buf[1], &adc_hw->fifo, transfers, false);
 
     dma_channel_set_irq1_enabled(stream_channels[0], true);
     dma_channel_set_irq1_enabled(stream_channels[1], true);
@@ -407,13 +416,14 @@ void platform_stream_stop(void)
     stream_running = false;
 }
 
-bool platform_stream_take(const uint16_t **samples)
+bool platform_stream_take(const uint8_t **bytes, uint16_t *samples)
 {
     for (uint32_t i = 0; i < 2; i++)
     {
         if (stream_ready[i])
         {
-            *samples = stream_buf[i];
+            *bytes = stream_buf[i];
+            *samples = stream_bits == 8 ? PLATFORM_STREAM_SAMPLES_8 : PLATFORM_STREAM_SAMPLES_16;
             stream_ready[i] = false;
             return true;
         }
@@ -483,4 +493,8 @@ static void restart_reason_init(void)
     }
 
     watchdog_hw->scratch[0] = restarts;
+}
+uint8_t platform_stream_bits(void)
+{
+    return stream_bits;
 }
