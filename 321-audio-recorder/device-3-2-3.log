@@ -1,0 +1,58 @@
+задание: 3.2.3
+проект: 321-audio-recorder
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-01T20:21:33
+   0.000 --> help
+   0.062 <-- help
+   0.062 <-- help             list of commands
+   0.062 <-- info             device passport
+   0.062 <-- uptime           time since reset
+   0.062 <-- led_enable       turn LED on
+   0.062 <-- led_disable      turn LED off
+   0.062 <-- led_blink        blink LED
+   0.062 <-- led_period       set blink period, ms
+   0.062 <-- button           button state and press count
+   0.062 <-- pi_start         start pi calculation
+   0.062 <-- pi               last pi result
+   0.062 <-- profiling        stopwatch results
+   0.062 <-- profiling_reset  reset stopwatches
+   0.062 <-- get_voltage      voltage on GP26, V
+   0.062 <-- get_temp         chip temperature, C
+   0.062 <-- tm_start         start telemetry stream
+   0.062 <-- tm_stop          stop telemetry stream
+   0.062 <-- charge_on        charge RC circuit
+   0.062 <-- timer_blink_start blink LED by timer, ms
+   0.062 <-- timer_blink_stop stop timer blink
+   0.062 <-- cap_start        capture N samples by timer
+   0.062 <-- cap_dump         print last capture
+   0.062 <-- dma_cap          capture block by DMA
+   0.062 <-- stream_start     start sample stream
+   0.062 <-- stream_stop      stop sample stream
+   0.062 <-- wdt_enable       enable watchdog, ms
+   0.062 <-- hang             stop superloop forever
+   0.062 <-- reset_reason     why board restarted
+   0.062 <-- charge_off       discharge RC circuit
+   1.058 --> dma_cap 1000
+   1.120 <-- dma_cap 1000
+   1.120 <-- dma_cap: 1000 samples in 22689 us, expected 22675 us, min 960 max 1227 mean 972.2
+   2.562 --> dma_cap 4410
+   2.622 <-- dma_cap 4410
+   2.684 <-- dma_cap: 4410 samples in 100005 us, expected 100000 us, min 960 max 1226 mean 970.8
+   4.119 --> dma_cap 8192
+   4.181 <-- dma_cap 8192
+   4.368 <-- dma_cap: 8192 samples in 185762 us, expected 185759 us, min 933 max 1234 mean 969.9
+   6.179 --> uptime
+   6.241 <-- uptime
+   6.241 <-- uptime: 24051 ms
+   7.241 --> dma_cap 0
+   7.303 <-- dma_cap 0
+   7.303 <-- error: N must be 1..8192
+   7.802 --> dma_cap 9000
+   7.865 <-- dma_cap 9000
+   7.865 <-- error: N must be 1..8192
+   8.365 --> dma_cap
+   8.427 <-- dma_cap
+   8.427 <-- error: usage dma_cap <N>
+итог: отправлено кадров 8, принято строк 43

@@ -7,10 +7,13 @@
 #include "profiling/profiling.h"
 
 #include "api/api.h"
+#include "api/api-commands.h"
 #include "led-task/led-task.h"
 #include "button-task/button-task.h"
 #include "pi-task/pi-task.h"
 #include "telemetry-task/telemetry-task.h"
+#include "block-task/block-task.h"
+#include "stream-task/stream-task.h"
 
 // Номера секундомеров прибора: итерация суперцикла, приём и выполнение
 // команды, обработчики трёх задач.
@@ -34,6 +37,13 @@ static void telemetry_line(const telemetry_sample_t *sample)
            sample->temp_c);
 }
 
+// Пакет потока уходит в порт байтами без замены: связь задачи с отправкой
+// задаёт main, двоичные данные отправляет platform.
+static void stream_send(const stream_packet_t *packet, uint16_t len)
+{
+    platform_send_bytes((const uint8_t *)packet, len);
+}
+
 int main(void)
 {
     platform_init();
@@ -48,6 +58,8 @@ int main(void)
     led_task_init();
     telemetry_task_init(telemetry_line);
     button_task_init(led_task_next_state);
+    block_task_init(api_report_block);
+    stream_task_init(stream_send);
 
     LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
@@ -76,7 +88,14 @@ int main(void)
         profiling_stop(SW_PI);
 
         telemetry_task_handle();
+        block_task_handle();
+        stream_task_handle();
 
         profiling_stop(SW_LOOP);
+
+        // Сторожевой таймер обновляет суперцикл — последним делом итерации:
+        // если хоть одна задача зависнет, обновления прекратятся и плата
+        // перезапустится.
+        platform_watchdog_update();
     }
 }

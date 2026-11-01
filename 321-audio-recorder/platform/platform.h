@@ -12,7 +12,8 @@ typedef enum
 
 void platform_init(void);
 void platform_led_set(bool on);
-bool platform_button_read(platform_button_t button);float platform_get_voltage_v(void);
+bool platform_button_read(platform_button_t button);
+float platform_get_voltage_v(void);
 float platform_get_temp_c(void);
 void platform_charge_set(bool on);
 
@@ -21,3 +22,43 @@ void platform_charge_set(bool on);
 bool platform_timer_blink_start(uint32_t period_ms);
 void platform_timer_blink_stop(void);
 uint32_t platform_timer_blink_toggles(void);
+
+// --- 3.2.2: захват отсчётов по будильнику ---
+
+#define PLATFORM_CAPTURE_MAX 2000
+
+typedef struct
+{
+    uint32_t count;
+    uint32_t period_us;
+    uint32_t interval_min_us;
+    uint32_t interval_max_us;
+    float handler_pct;
+    const uint16_t *codes;
+} platform_capture_info_t;
+
+bool platform_capture_start(uint32_t count, uint32_t period_us);
+void platform_capture_get(platform_capture_info_t *info);
+
+// --- 3.2.3: захват блока через DMA ---
+
+bool platform_dma_capture_start(uint32_t samples);
+bool platform_dma_capture_done(void);
+void platform_dma_capture_result(uint32_t *samples, uint32_t *elapsed_us, const uint16_t **codes);
+
+// --- 3.2.4: поток с двойной буферизацией ---
+
+#define PLATFORM_STREAM_SAMPLES 512
+
+bool platform_stream_start(void);
+void platform_stream_stop(void);
+bool platform_stream_take(const uint16_t **samples);
+uint32_t platform_stream_overruns(void);
+void platform_send_bytes(const uint8_t *data, uint16_t len);
+
+// --- 3.2.7: сторожевой таймер ---
+
+bool platform_watchdog_enable(uint32_t timeout_ms);
+void platform_watchdog_update(void);
+bool platform_restarted_by_watchdog(void);
+uint32_t platform_restarts(void);

@@ -11,6 +11,8 @@
 #include "button-task/button-task.h"
 #include "pi-task/pi-task.h"
 #include "telemetry-task/telemetry-task.h"
+#include "block-task/block-task.h"
+#include "stream-task/stream-task.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
 
@@ -237,6 +239,164 @@ static void cmd_timer_blink_stop(const command_t *command)
            (unsigned long)platform_timer_blink_toggles());
 }
 
+// Отчёт о готовом блоке DMA: печатает его функция, переданная задаче блока.
+void api_report_block(const block_result_t *result)
+{
+    printf("dma_cap: %lu samples in %lu us, expected %lu us, min %lu max %lu mean %.1f\n",
+           (unsigned long)result->samples,
+           (unsigned long)result->elapsed_us,
+           (unsigned long)result->expected_us,
+           (unsigned long)result->min,
+           (unsigned long)result->max,
+           result->mean);
+}
+
+static void cmd_cap_start(const command_t *command)
+{
+    uint32_t count = 0;
+    uint32_t period_us = 0;
+
+    if (command->argc != 2 || !parse_u32(command->argv[0], &count) ||
+        !parse_u32(command->argv[1], &period_us))
+    {
+        printf("error: usage cap_start <N> <period_us>\n");
+        return;
+    }
+
+    if (count < 1 || count > 2000 || period_us < 10)
+    {
+        printf("error: N must be 1..2000, period_us at least 10\n");
+        return;
+    }
+
+    if (!platform_capture_start(count, period_us))
+    {
+        printf("error: N must be 1..2000, period_us at least 10\n");
+        return;
+    }
+
+    printf("capture: started, %lu samples, period %lu us\n",
+           (unsigned long)count, (unsigned long)period_us);
+}
+
+static void cmd_cap_dump(const command_t *command)
+{
+    (void)command;
+
+    platform_capture_info_t info;
+    platform_capture_get(&info);
+
+    printf("capture: %lu samples, period %lu us, interval %lu..%lu us, handler %.1f %%\n",
+           (unsigned long)info.count,
+           (unsigned long)info.period_us,
+           (unsigned long)info.interval_min_us,
+           (unsigned long)info.interval_max_us,
+           info.handler_pct);
+
+    for (uint32_t i = 0; i < info.count; i++)
+    {
+        if (i % 16 == 0)
+        {
+            printf("cap:");
+        }
+        printf(" %lu", (unsigned long)info.codes[i]);
+        if (i % 16 == 15 || i + 1 == info.count)
+        {
+            printf("\n");
+        }
+    }
+}
+
+static void cmd_dma_cap(const command_t *command)
+{
+    uint32_t samples = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &samples))
+    {
+        printf("error: usage dma_cap <N>\n");
+        return;
+    }
+
+    if (samples < 1 || samples > 8192)
+    {
+        printf("error: N must be 1..8192\n");
+        return;
+    }
+
+    if (!block_task_start(samples))
+    {
+        printf("error: N must be 1..8192\n");
+        return;
+    }
+}
+
+static void cmd_stream_start(const command_t *command)
+{
+    (void)command;
+
+    if (!stream_task_start())
+    {
+        printf("error: stream is already running\n");
+        return;
+    }
+
+    printf("stream: started, 44100 Hz, 16 bit\n");
+}
+
+static void cmd_stream_stop(const command_t *command)
+{
+    (void)command;
+
+    uint32_t packets = 0;
+    uint32_t samples = 0;
+    uint32_t overruns = 0;
+    stream_task_stop(&packets, &samples, &overruns);
+
+    printf("stream: stopped, %lu packets, %lu samples, %lu overruns\n",
+           (unsigned long)packets,
+           (unsigned long)samples,
+           (unsigned long)overruns);
+}
+
+static void cmd_wdt_enable(const command_t *command)
+{
+    uint32_t timeout_ms = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &timeout_ms))
+    {
+        printf("error: usage wdt_enable <timeout_ms>\n");
+        return;
+    }
+
+    if (!platform_watchdog_enable(timeout_ms))
+    {
+        printf("error: timeout_ms must be 1..8388\n");
+        return;
+    }
+
+    printf("wdt: enabled, timeout %lu ms\n", (unsigned long)timeout_ms);
+}
+
+static void cmd_hang(const command_t *command)
+{
+    (void)command;
+    printf("hang: superloop stopped\n");
+
+    // Намеренный вечный цикл: суперцикл больше не обновляет сторожевой
+    // таймер, и плата перезапускается им.
+    for (;;)
+    {
+    }
+}
+
+static void cmd_reset_reason(const command_t *command)
+{
+    (void)command;
+    printf("reset: %s, restarts %lu\n",
+           platform_restarted_by_watchdog() ? "watchdog" : "other",
+           (unsigned long)platform_restarts());
+}
+
 static void cmd_pi_start(const command_t *command)
 {
     uint32_t terms = 1000000;
@@ -342,6 +502,14 @@ const api_command_t api_commands[] = {
     { "charge_on", "charge RC circuit", cmd_charge_on },
     { "timer_blink_start", "blink LED by timer, ms", cmd_timer_blink_start },
     { "timer_blink_stop", "stop timer blink", cmd_timer_blink_stop },
+    { "cap_start", "capture N samples by timer", cmd_cap_start },
+    { "cap_dump", "print last capture", cmd_cap_dump },
+    { "dma_cap", "capture block by DMA", cmd_dma_cap },
+    { "stream_start", "start sample stream", cmd_stream_start },
+    { "stream_stop", "stop sample stream", cmd_stream_stop },
+    { "wdt_enable", "enable watchdog, ms", cmd_wdt_enable },
+    { "hang", "stop superloop forever", cmd_hang },
+    { "reset_reason", "why board restarted", cmd_reset_reason },
     { "charge_off", "discharge RC circuit", cmd_charge_off },
 };
 

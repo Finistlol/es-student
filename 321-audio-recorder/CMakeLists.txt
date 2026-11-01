@@ -7,6 +7,11 @@ include(pico_sdk_import.cmake)
 
 project(321_audio_recorder)
 
+# Буфер передачи USB CDC: пакет потока 1028 байт не должен ждать
+# освобождения 64-байтного буфера TinyUSB по кадрам USB — суперцикл
+# блокируется дольше периода буфера и DMA переполняется.
+add_compile_definitions(CFG_TUD_CDC_TX_BUFSIZE=4096)
+
 pico_sdk_init()
 
 add_compile_options(-Wall)
@@ -19,7 +24,7 @@ target_compile_definitions(device PRIVATE DEVICE_BOARD="${PICO_BOARD}")
 
 add_library(platform platform/platform.c)
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc)
+target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc hardware_dma hardware_watchdog pico_time)
 
 # Логика прибора: команды и задачи. SDK не подключает.
 add_library(logic
@@ -29,6 +34,8 @@ add_library(logic
     logic/button-task/button-task.c
     logic/pi-task/pi-task.c
     logic/telemetry-task/telemetry-task.c
+    logic/block-task/block-task.c
+    logic/stream-task/stream-task.c
 )
 target_include_directories(logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/logic)
 target_link_libraries(logic PUBLIC stdio_text_protocol)
