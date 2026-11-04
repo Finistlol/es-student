@@ -26,9 +26,9 @@ static const uint32_t CHARGE_PIN = 22;
 #define ADC_SAMPLE_HZ 44100.0f
 
 // Вывод тона, его меандр делает модуль ШИМ.
-static const uint32_t TONE_PIN = 20;
+#define TONE_PIN 20
 // Счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды.
-static const uint32_t TONE_COUNT_HZ = 1000000;
+#define TONE_COUNT_HZ 1000000
 
 // Вызывается из platform_init: разбирает причину прошлого сброса
 // и восстанавливает счётчик перезапусков из scratch-регистра.
@@ -423,6 +423,17 @@ void platform_stream_stop(void)
     {
         return;
     }
+
+    // RP2040-E13: прерванный канал запускает соседнего по цепочке, и тот
+    // остаётся взведённым — следующий захват пишет за конец буфера.
+    // Перед прерыванием каналов цепочка разрывается.
+    dma_channel_config break_a = dma_channel_get_default_config(stream_channels[0]);
+    channel_config_set_chain_to(&break_a, stream_channels[0]);
+    dma_channel_set_config(stream_channels[0], &break_a, false);
+
+    dma_channel_config break_b = dma_channel_get_default_config(stream_channels[1]);
+    channel_config_set_chain_to(&break_b, stream_channels[1]);
+    dma_channel_set_config(stream_channels[1], &break_b, false);
 
     dma_channel_abort(stream_channels[0]);
     dma_channel_abort(stream_channels[1]);
