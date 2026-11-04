@@ -59,6 +59,10 @@ uint8_t platform_stream_bits(void);
 uint32_t platform_stream_overruns(void);
 void platform_send_bytes(const uint8_t *data, uint16_t len);
 
+// Тон на GP20: меандр частоты freq_hz от модуля ШИМ, ядро в нём не участвует;
+// 0 — тон выключен, на выводе снова ноль; false — частота вне 20..20000 Гц.
+bool platform_tone_set(uint32_t freq_hz);
+
 // --- 3.2.7: сторожевой таймер ---
 
 bool platform_watchdog_enable(uint32_t timeout_ms);

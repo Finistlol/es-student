@@ -3,6 +3,8 @@
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 #include "hardware/gpio.h"
+#include "hardware/pwm.h"
+#include "hardware/clocks.h"
 #include "hardware/watchdog.h"
 #include "pico/stdio.h"
 #include "pico/time.h"
@@ -22,6 +24,11 @@ static const uint32_t CHARGE_PIN = 22;
 
 // Частота отсчётов потока и блока: 44,1 кГц из 48 МГц такта АЦП.
 #define ADC_SAMPLE_HZ 44100.0f
+
+// Вывод тона, его меандр делает модуль ШИМ.
+static const uint32_t TONE_PIN = 20;
+// Счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды.
+static const uint32_t TONE_COUNT_HZ = 1000000;
 
 // Вызывается из platform_init: разбирает причину прошлого сброса
 // и восстанавливает счётчик перезапусков из scratch-регистра.
@@ -48,6 +55,16 @@ void platform_init(void)
     gpio_init(CHARGE_PIN);
     gpio_set_dir(CHARGE_PIN, GPIO_OUT);
     gpio_put(CHARGE_PIN, false);
+
+    // Вывод тона отдаётся модулю ШИМ; делитель приводит счёт к 1 МГц,
+    // тогда wrap равен периоду тона в микросекундах минус один.
+    gpio_set_function(TONE_PIN, GPIO_FUNC_PWM);
+    uint slice = pwm_gpio_to_slice_num(TONE_PIN);
+    // Делитель: clk_sys / 1 МГц, целым числом (без дробной части).
+    pwm_set_clkdiv_int_frac(slice, clock_get_hz(clk_sys) / TONE_COUNT_HZ, 0);
+    pwm_set_wrap(slice, 1000);
+    pwm_set_gpio_level(TONE_PIN, 0);
+    pwm_set_enabled(slice, true);
 
     restart_reason_init();
 }
@@ -443,6 +460,33 @@ void platform_send_bytes(const uint8_t *data, uint16_t len)
 }
 
 // --- 3.2.7: сторожевой таймер ---
+
+
+// --- Тон на GP20 от модуля ШИМ ---
+
+bool platform_tone_set(uint32_t freq_hz)
+{
+    uint slice = pwm_gpio_to_slice_num(TONE_PIN);
+
+    if (freq_hz == 0)
+    {
+        pwm_set_gpio_level(TONE_PIN, 0);
+        return true;
+    }
+
+    if (freq_hz < 20 || freq_hz > 20000)
+    {
+        return false;
+    }
+
+    // Период тона в микросекундах: счётчик ШИМ тикает микросекундами.
+    uint32_t period_us = TONE_COUNT_HZ / freq_hz;
+    pwm_set_wrap(slice, period_us - 1);
+    pwm_set_gpio_level(TONE_PIN, period_us / 2);
+    return true;
+}
+
+// --- Сторожевой таймер ---
 
 // SDK занимает scratch[4..7], счётчик перезапусков живёт в scratch[0].
 static uint32_t restarts = 0;

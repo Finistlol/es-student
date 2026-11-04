@@ -24,7 +24,7 @@ target_compile_definitions(device PRIVATE DEVICE_BOARD="${PICO_BOARD}")
 
 add_library(platform platform/platform.c)
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc hardware_dma hardware_watchdog pico_time)
+target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc hardware_dma hardware_watchdog hardware_pwm hardware_clocks pico_time)
 
 # Логика прибора: команды и задачи. SDK не подключает.
 add_library(logic

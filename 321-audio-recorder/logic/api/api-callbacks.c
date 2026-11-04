@@ -365,7 +365,7 @@ static void cmd_stream_stop(const command_t *command)
     uint32_t overruns = 0;
     stream_task_stop(&packets, &samples, &overruns);
 
-    printf("stream: stopped, %lu packets, %lu samples, %lu overruns\n",
+    printf("stream: stopped, %lu frames, %lu samples, %lu overruns\n",
            (unsigned long)packets,
            (unsigned long)samples,
            (unsigned long)overruns);
@@ -408,6 +408,112 @@ static void cmd_reset_reason(const command_t *command)
     printf("reset: %s, restarts %lu\n",
            platform_restarted_by_watchdog() ? "watchdog" : "other",
            (unsigned long)platform_restarts());
+}
+
+static void cmd_generate_tone(const command_t *command)
+{
+    uint32_t freq_hz = 0;
+
+    if (command->argc != 1 || !parse_u32(command->argv[0], &freq_hz))
+    {
+        printf("error: usage generate_tone <Hz>\n");
+        return;
+    }
+
+    if (!platform_tone_set(freq_hz))
+    {
+        printf("error: Hz must be 0 or 20..20000\n");
+        return;
+    }
+
+    if (freq_hz == 0)
+    {
+        printf("tone: off\n");
+    }
+    else
+    {
+        printf("tone: %lu Hz\n", (unsigned long)freq_hz);
+    }
+}
+
+// Отчёты микрофона: блок снимает задача блока, а здесь его коды
+// переводятся в смещение и уровень сигнала за окно.
+static void mic_report_bias(const block_result_t *result)
+{
+    // Смещение — среднее кодов блока в вольтах.
+    float bias_v = result->mean * 3.3f / 4096.0f;
+    printf("mic: bias %.3f V\n", bias_v);
+}
+
+static void mic_report_level(const block_result_t *result)
+{
+    // Отклонения от среднего: среднеквадратичное и пик, в милливольтах.
+    float mean = result->mean;
+    float sum_sq = 0.0f;
+    float peak = 0.0f;
+    for (uint32_t i = 0; i < result->samples; i++)
+    {
+        float dev = (float)result->codes[i] - mean;
+        sum_sq += dev * dev;
+        if (dev < 0)
+        {
+            dev = -dev;
+        }
+        if (dev > peak)
+        {
+            peak = dev;
+        }
+    }
+    float rms = result->samples > 0 ? sum_sq / result->samples : 0.0f;
+    // Корень без math.h: два шага Ньютона от грубой оценки.
+    rms = rms > 0 ? rms : 0.0f;
+    float r = rms > 1.0f ? rms : 1.0f;
+    for (int i = 0; i < 8; i++)
+    {
+        r = (r + rms / r) / 2.0f;
+    }
+    float to_mv = 3300.0f / 4096.0f;
+    printf("mic: level %.1f mV rms, peak %.1f mV, %lu ms\n",
+           r * to_mv, peak * to_mv,
+           (unsigned long)(result->samples * 1000UL / 44100UL));
+}
+
+static void cmd_mic_bias(const command_t *command)
+{
+    (void)command;
+    if (!block_task_start_cb(2000, mic_report_bias))
+    {
+        printf("error: block task is busy\n");
+    }
+}
+
+static void cmd_mic_level(const command_t *command)
+{
+    uint32_t ms = 100;
+
+    if (command->argc > 1)
+    {
+        printf("error: usage mic_level [<ms>]\n");
+        return;
+    }
+
+    if (command->argc == 1 && !parse_u32(command->argv[0], &ms))
+    {
+        printf("error: usage mic_level [<ms>]\n");
+        return;
+    }
+
+    if (ms < 1 || ms > 185)
+    {
+        printf("error: ms must be 1..185\n");
+        return;
+    }
+
+    uint32_t samples = (uint32_t)((uint64_t)ms * 44100 / 1000);
+    if (!block_task_start_cb(samples, mic_report_level))
+    {
+        printf("error: block task is busy\n");
+    }
 }
 
 static void cmd_pi_start(const command_t *command)
@@ -523,6 +629,9 @@ const api_command_t api_commands[] = {
     { "wdt_enable", "enable watchdog, ms", cmd_wdt_enable },
     { "hang", "stop superloop forever", cmd_hang },
     { "reset_reason", "why board restarted", cmd_reset_reason },
+    { "generate_tone", "tone on GP20, Hz", cmd_generate_tone },
+    { "mic_bias", "microphone bias, V", cmd_mic_bias },
+    { "mic_level", "microphone level, mV", cmd_mic_level },
     { "charge_off", "discharge RC circuit", cmd_charge_off },
 };
 

@@ -1,6 +1,5 @@
-# Проверка задания п3.2.2 на устройстве: захват отсчётов будильником
-# с периодами 125 и 23 мкс, дамп и неверные аргументы.
-# Обмен записывается в device-3-2-2.log.
+# Задание 3.2.2: захватывает отсчёты по будильнику с периодом 125 и 23 мкс, выводит их
+# с разбросом интервалов и пробует неверные аргументы. Обмен — в файл device-3-2-2.log.
 
 import time
 from datetime import datetime
@@ -14,13 +13,16 @@ PRODUCT_ID = 0x000A
 TASK = "3.2.2"
 PROJECT = "321-audio-recorder"
 LOG_NAME = "device-3-2-2.log"
-
+BACKSPACE = "\x7f"
+# Кадр команды и сколько секунд слушать ответ.
 STEPS = [
+    ("\r", 0.5),
     ("help\r", 1),
+    ("info\r", 1),
     ("cap_start 1000 125\r", 0.5),
-    ("cap_dump\r", 3),
+    ("cap_dump\r", 1.5),
     ("cap_start 2000 23\r", 0.5),
-    ("cap_dump\r", 5),
+    ("cap_dump\r", 2),
     ("cap_start 0 125\r", 0.5),
     ("cap_start 1000\r", 0.5),
 ]
@@ -34,7 +36,7 @@ def find_board():
 
 
 def printable(text):
-    return text.replace("\x7f", "<BS>").replace("\b", "<BS>").replace("\r", "").replace("\n", "")
+    return text.replace(BACKSPACE, "<BS>").replace("\b", "<BS>").replace("\r", "").replace("\n", "")
 
 
 def talk(board):
@@ -49,12 +51,13 @@ def talk(board):
             exchange.append((time.monotonic() - started, "-->", printable(frame)))
             deadline = time.monotonic() + listen_s
             while time.monotonic() < deadline:
-                received += port.read(2048).decode("ascii", "replace")
+                received += port.read(256).decode("ascii", "replace")
                 while "\n" in received:
                     line, received = received.split("\n", 1)
                     line = printable(line).strip()
                     if line:
                         exchange.append((time.monotonic() - started, "<--", line))
+                        print(line, end="\r\n")
     return exchange
 
 
@@ -68,13 +71,14 @@ def write_log(board, exchange):
         log.write("начало: " + datetime.now().isoformat(timespec="seconds") + "\n")
         for moment, direction, text in exchange:
             log.write("%8.3f %s %s\n" % (moment, direction, text))
-        log.write("итог: отправлено кадров %d, принято строк %d\n" % (len(STEPS), len(exchange) - len(STEPS)))
+        answers = len(exchange) - len(STEPS)
+        log.write("итог: отправлено кадров %d, принято строк %d\n" % (len(STEPS), answers))
 
 
 board = find_board()
 
 if board is None:
-    print("Плата не найдена. Проверьте кабель и запишите на плату прошивку проекта.", end="\r\n")
+    print("Плата не найдена. Проверьте кабель и запишите на плату прошивку прибора.", end="\r\n")
 else:
     print("Плата на порту " + board.device + ", отправляю кадры", end="\r\n")
     exchange = talk(board)

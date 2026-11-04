@@ -3,60 +3,67 @@
 устройство: 2e8a:000a
 серийный номер: 5303284728F62C9C
 порт: COM7
-начало: 2026-11-01T21:27:36
-   0.201 --> help
-   0.206 <-- help
-   0.206 <-- help             list of commands
-   0.206 <-- info             device passport
-   0.206 <-- uptime           time since reset
-   0.206 <-- led_enable       turn LED on
-   0.206 <-- led_disable      turn LED off
-   0.206 <-- led_blink        blink LED
-   0.206 <-- led_period       set blink period, ms
-   0.206 <-- button           button state and press count
-   0.206 <-- pi_start         start pi calculation
-   0.206 <-- pi               last pi result
-   0.206 <-- profiling        stopwatch results
-   0.206 <-- profiling_reset  reset stopwatches
-   0.206 <-- get_voltage      voltage on GP26, V
-   0.206 <-- get_temp         chip temperature, C
-   0.206 <-- tm_start         start telemetry stream
-   0.206 <-- tm_stop          stop telemetry stream
-   0.206 <-- charge_on        charge RC circuit
-   0.206 <-- timer_blink_start blink LED by timer, ms
-   0.206 <-- timer_blink_stop stop timer blink
-   0.206 <-- cap_start        capture N samples by timer
-   0.206 <-- cap_dump         print last capture
-   0.206 <-- dma_cap          capture block by DMA
-   0.206 <-- stream_start     start sample stream
-   0.206 <-- stream_stop      stop sample stream
-   0.206 <-- wdt_enable       enable watchdog, ms
-   0.206 <-- hang             stop superloop forever
-   0.206 <-- reset_reason     why board restarted
-   0.271 <-- charge_off       discharge RC circuit
-   1.205 --> reset_reason
-   1.267 <-- reset_reason
-   1.267 <-- reset: watchdog, restarts 7
-   2.269 --> wdt_enable 9000
-   2.330 <-- wdt_enable 9000
-   2.330 <-- error: timeout_ms must be 1..8388
-   3.325 --> wdt_enable 2000
-   3.389 <-- wdt_enable 2000
-   3.389 <-- wdt: enabled, timeout 2000 ms
-   7.391 --> uptime
-   7.455 <-- uptime
-   7.455 <-- uptime: 705024 ms
-  10.993 --> uptime
-  11.044 <-- uptime
-  11.044 <-- uptime: 708627 ms
-  12.042 --> hang
-  12.104 <-- hang
-  12.104 <-- hang: superloop stopped
-  13.105 --- плата снова на связи... ожидание
-  14.693 --- плата снова на связи
-  16.729 --> reset_reason
-  16.781 <-- reset_reason
-  16.781 <-- reset: watchdog, restarts 8
-  17.779 --> uptime
-  17.841 <-- uptime
-  17.841 <-- uptime: 3706 ms
+начало: 2026-11-04T22:06:58
+   0.000 --> 
+   0.550 --> help
+   0.551 <-- help
+   0.551 <-- help             list of commands
+   0.551 <-- info             device passport
+   0.551 <-- uptime           time since reset
+   0.551 <-- led_enable       turn LED on
+   0.551 <-- led_disable      turn LED off
+   0.551 <-- led_blink        blink LED
+   0.551 <-- led_period       set blink period, ms
+   0.552 <-- button           button state and press count
+   0.552 <-- pi_start         start pi calculation
+   0.552 <-- pi               last pi result
+   0.552 <-- profiling        stopwatch results
+   0.552 <-- profiling_reset  reset stopwatches
+   0.552 <-- get_voltage      voltage on GP26, V
+   0.552 <-- get_temp         chip temperature, C
+   0.552 <-- tm_start         start telemetry stream
+   0.552 <-- tm_stop          stop telemetry stream
+   0.552 <-- charge_on        charge RC circuit
+   0.552 <-- timer_blink_start blink LED by timer, ms
+   0.552 <-- timer_blink_stop stop timer blink
+   0.552 <-- cap_start        capture N samples by timer
+   0.553 <-- cap_dump         print last capture
+   0.553 <-- dma_cap          capture block by DMA
+   0.553 <-- stream_start     start sample stream
+   0.553 <-- stream_stop      stop sample stream
+   0.553 <-- wdt_enable       enable watchdog, ms
+   0.553 <-- hang             stop superloop forever
+   0.553 <-- reset_reason     why board restarted
+   0.611 <-- generate_tone    tone on GP20, Hz
+   0.611 <-- mic_bias         microphone bias, V
+   0.611 <-- mic_level        microphone level, mV
+   0.611 <-- charge_off       discharge RC circuit
+   1.608 --> info
+   1.670 <-- info
+   1.670 <-- name: es-audio-recorder
+   1.670 <-- version: 1.0.0
+   1.670 <-- project: 321-audio-recorder
+   1.670 <-- repo: https://github.com/Finistlol/es-student
+   1.670 <-- board: pico
+   1.670 <-- serial: 5303284728F62C9C
+   1.670 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   1.670 <-- pico-sdk: 2.3.0
+   2.664 --> mic_bias
+   2.726 <-- mic_bias
+   2.726 <-- mic: bias 1.249 V
+   3.224 --> mic_level
+   3.287 <-- mic_level
+   3.348 <-- mic: level 103.0 mV rms, peak 362.5 mV, 100 ms
+   3.783 --> mic_level 50
+   3.845 <-- mic_level 50
+   3.845 <-- mic: level 85.4 mV rms, peak 335.1 mV, 50 ms
+   4.346 --> mic_level 185
+   4.408 <-- mic_level 185
+   4.594 <-- mic: level 92.0 mV rms, peak 350.7 mV, 184 ms
+   4.903 --> mic_level 0
+   4.965 <-- mic_level 0
+   4.965 <-- error: ms must be 1..185
+   5.460 --> mic_level 200
+   5.523 <-- mic_level 200
+   5.523 <-- error: ms must be 1..185
+итог: отправлено кадров 9, принято строк 53

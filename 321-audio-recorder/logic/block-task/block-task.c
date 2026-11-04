@@ -8,6 +8,7 @@
 #define BLOCK_SAMPLE_HZ 44100
 
 static block_task_callback_t report = 0;
+static block_task_callback_t current = 0;
 static bool started = false;
 
 void block_task_init(block_task_callback_t callback)
@@ -15,7 +16,7 @@ void block_task_init(block_task_callback_t callback)
     report = callback;
 }
 
-bool block_task_start(uint32_t samples)
+bool block_task_start_cb(uint32_t samples, block_task_callback_t callback)
 {
     if (started)
     {
@@ -27,8 +28,14 @@ bool block_task_start(uint32_t samples)
         return false;
     }
 
+    current = callback;
     started = true;
     return true;
+}
+
+bool block_task_start(uint32_t samples)
+{
+    return block_task_start_cb(samples, report);
 }
 
 void block_task_handle(void)
@@ -68,10 +75,11 @@ void block_task_handle(void)
     result.min = min;
     result.max = max;
     result.mean = samples > 0 ? (float)sum / (float)samples : 0.0f;
+    result.codes = codes;
 
     started = false;
-    if (report != 0)
+    if (current != 0)
     {
-        report(&result);
+        current(&result);
     }
 }
