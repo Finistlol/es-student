@@ -1,0 +1,45 @@
+задание: 3.3.4
+проект: 331-uart
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-13T19:18:31
+   0.000 --> 
+   0.538 --> help
+   0.595 <-- help
+   0.595 <-- help             list of commands
+   0.595 <-- info             device passport
+   0.595 <-- uptime           time since reset
+   0.595 <-- led_enable       turn LED on
+   0.595 <-- led_disable      turn LED off
+   0.595 <-- led_blink        blink LED
+   0.595 <-- led_period       set blink period, ms
+   0.595 <-- button           button state and press count
+   0.595 <-- pi_start         start pi calculation
+   0.595 <-- pi               last pi result
+   0.595 <-- edge             measure RC edges, pp|od
+   0.595 <-- loop             UART loopback mode
+   0.595 <-- echo             send text through UART
+   0.595 <-- link             send text both ways
+   0.595 <-- baud_shift       shift uart1 baud, %
+   0.595 <-- text             send 32 chars uart1->0
+   0.595 <-- parity           set parity rx tx
+   0.595 <-- block            64-byte block, irq|poll
+   0.595 <-- profiling        stopwatch results
+   0.595 <-- profiling_reset  reset stopwatches
+   1.592 --> block irq
+   1.649 <-- block irq
+   1.649 <-- block irq: 64/64 match, err: none
+   3.597 --> block poll
+   3.662 <-- block poll
+   3.662 <-- block poll: 32/64 match, err: OE
+   5.606 --> block irq
+   5.662 <-- block irq
+   5.662 <-- block irq: 64/64 match, err: none
+   7.666 --> block poll
+   7.724 <-- block poll
+   7.724 <-- block poll: 32/64 match, err: OE
+   9.690 --> block xx
+   9.750 <-- block xx
+   9.750 <-- error: usage block irq|poll
+итог: отправлено кадров 7, принято строк 31

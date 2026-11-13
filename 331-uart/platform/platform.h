@@ -37,3 +37,23 @@ bool platform_uart_writable(void);
 bool platform_uart_putc(char c);
 int platform_uart_getc(void);
 uint32_t platform_uart_errors(void);
+// Дополнения к platform.h для занятий 3.3.3 и 3.3.4.
+// К existing declarations добавляем UART1 и блочный приём.
+
+// --- UART1: второй модуль на GP8 (TX) и GP9 (RX) ---
+void platform_uart1_setup(void);
+uint32_t platform_uart1_baud_shift(int32_t percent);
+void platform_uart0_parity(const char *mode);
+void platform_uart1_parity(const char *mode);
+bool platform_uart1_writable(void);
+bool platform_uart1_putc(char c);
+int platform_uart1_getc(void);
+uint32_t platform_uart1_errors(void);
+void platform_uart1_flush_rx(void);
+
+// --- Блочный приём на UART0 с прерыванием (3.3.4) ---
+#define PLATFORM_BLOCK_SIZE 64
+void platform_uart0_irq_enable(bool enable);
+extern volatile uint8_t platform_block_count;
+const uint8_t *platform_block_data(void);
+void platform_uart0_drain_rx(void);

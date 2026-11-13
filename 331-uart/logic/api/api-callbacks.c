@@ -248,6 +248,124 @@ static void cmd_echo(const command_t *command)
     }
 }
 
+static void cmd_link(const command_t *command)
+{
+    if (command->argc != 1)
+    {
+        printf("error: usage link <text>\n");
+        return;
+    }
+
+    size_t len = strlen(command->argv[0]);
+    if (len > 32)
+    {
+        printf("error: text longer than 32\n");
+        return;
+    }
+
+    if (!uart_task_link(command->argv[0], (uint8_t)len))
+    {
+        printf("error: uart is busy\n");
+    }
+}
+
+static void cmd_baud_shift(const command_t *command)
+{
+    if (command->argc != 1)
+    {
+        printf("error: usage baud_shift <percent>\n");
+        return;
+    }
+
+    // Процент может быть отрицательным: разбираем знак вручную.
+    const char *p = command->argv[0];
+    bool negative = false;
+    if (p[0] == '-')
+    {
+        negative = true;
+        p = p + 1;
+    }
+
+    uint32_t abs_value = 0;
+    if (!parse_u32(p, &abs_value) || abs_value > 50)
+    {
+        printf("error: percent must be -50..50\n");
+        return;
+    }
+
+    int32_t percent = negative ? -(int32_t)abs_value : (int32_t)abs_value;
+    uint32_t actual = platform_uart1_baud_shift(percent);
+    if (actual == 0)
+    {
+        printf("error: percent must be -50..50\n");
+        return;
+    }
+
+    printf("baud_shift: uart1 %lu baud\n", (unsigned long)actual);
+}
+
+static void cmd_text(const command_t *command)
+{
+    (void)command;
+    if (!uart_task_text())
+    {
+        printf("error: uart is busy\n");
+    }
+}
+
+static void cmd_parity(const command_t *command)
+{
+    if (command->argc != 2)
+    {
+        printf("error: usage parity <rx> <tx>\n");
+        return;
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        const char *mode = command->argv[i];
+        if (strcmp(mode, "none") != 0 && strcmp(mode, "even") != 0 &&
+            strcmp(mode, "odd") != 0)
+        {
+            printf("error: usage parity <rx> <tx>\n");
+            return;
+        }
+    }
+
+    platform_uart0_parity(command->argv[0]);
+    platform_uart1_parity(command->argv[1]);
+    printf("parity: rx %s, tx %s\n", command->argv[0], command->argv[1]);
+}
+
+static void cmd_block(const command_t *command)
+{
+    if (command->argc != 1)
+    {
+        printf("error: usage block irq|poll\n");
+        return;
+    }
+
+    bool irq_mode;
+    if (strcmp(command->argv[0], "irq") == 0)
+    {
+        irq_mode = true;
+    }
+    else if (strcmp(command->argv[0], "poll") == 0)
+    {
+        irq_mode = false;
+    }
+    else
+    {
+        printf("error: usage block irq|poll\n");
+        return;
+    }
+
+    if (!uart_task_block(irq_mode))
+    {
+        printf("error: uart is busy\n");
+    }
+}
+
 static void cmd_profiling(const command_t *command)
 {
     (void)command;
@@ -291,6 +409,11 @@ const api_command_t api_commands[] = {
     { "edge", "measure RC edges, pp|od", cmd_edge },
     { "loop", "UART loopback mode", cmd_loop },
     { "echo", "send text through UART", cmd_echo },
+    { "link", "send text both ways", cmd_link },
+    { "baud_shift", "shift uart1 baud, %", cmd_baud_shift },
+    { "text", "send 32 chars uart1->0", cmd_text },
+    { "parity", "set parity rx tx", cmd_parity },
+    { "block", "64-byte block, irq|poll", cmd_block },
     { "profiling", "stopwatch results", cmd_profiling },
     { "profiling_reset", "reset stopwatches", cmd_profiling_reset },
 };

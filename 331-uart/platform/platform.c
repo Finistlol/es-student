@@ -40,6 +40,7 @@ void platform_init(void)
     adc_select_input(NODE_ADC_CHANNEL);
 
     platform_uart_setup();
+    platform_uart1_setup();
 }
 
 void platform_led_set(bool on)
@@ -104,6 +105,7 @@ float platform_node_voltage_v(void)
 // --- UART0 ---
 
 #include "hardware/uart.h"
+#include <string.h>
 
 #define UART_ID uart0
 #define UART_BAUDRATE 115200
@@ -175,4 +177,129 @@ uint32_t platform_uart_errors(void)
     uint32_t rsr = uart_get_hw(UART_ID)->rsr;
     uart_get_hw(UART_ID)->rsr = 0;
     return rsr;
+}
+
+// --- UART1: второй модуль на GP8 (TX) и GP9 (RX) ---
+
+#define UART1_ID uart1
+#define UART1_TX_PIN 8
+#define UART1_RX_PIN 9
+
+void platform_uart1_setup(void)
+{
+    uart_init(uart1, 115200);
+    gpio_set_function(UART1_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(UART1_RX_PIN, GPIO_FUNC_UART);
+}
+
+uint32_t platform_uart1_baud_shift(int32_t percent)
+{
+    if (percent < -50 || percent > 50)
+    {
+        return 0;
+    }
+    uint32_t target = (uint32_t)(115200UL * (100L + percent) / 100L);
+    return uart_set_baudrate(uart1, target);
+}
+
+void platform_uart0_parity(const char *mode)
+{
+    uart_parity_t p = UART_PARITY_NONE;
+    if (strcmp(mode, "even") == 0) p = UART_PARITY_EVEN;
+    else if (strcmp(mode, "odd") == 0) p = UART_PARITY_ODD;
+    uart_set_format(uart0, 8, 1, p);
+}
+
+void platform_uart1_parity(const char *mode)
+{
+    uart_parity_t p = UART_PARITY_NONE;
+    if (strcmp(mode, "even") == 0) p = UART_PARITY_EVEN;
+    else if (strcmp(mode, "odd") == 0) p = UART_PARITY_ODD;
+    uart_set_format(uart1, 8, 1, p);
+}
+
+bool platform_uart1_writable(void)
+{
+    return uart_is_writable(uart1);
+}
+
+bool platform_uart1_putc(char c)
+{
+    if (!uart_is_writable(uart1))
+    {
+        return false;
+    }
+    uart_get_hw(uart1)->dr = (uint8_t)c;
+    return true;
+}
+
+int platform_uart1_getc(void)
+{
+    if (!uart_is_readable(uart1))
+    {
+        return -1;
+    }
+    return (int)(uart_get_hw(uart1)->dr & 0xFF);
+}
+
+uint32_t platform_uart1_errors(void)
+{
+    uint32_t rsr = uart_get_hw(uart1)->rsr;
+    uart_get_hw(uart1)->rsr = 0;
+    return rsr;
+}
+
+void platform_uart1_flush_rx(void)
+{
+    while (uart_is_readable(uart1))
+    {
+        (void)uart_get_hw(uart1)->dr;
+    }
+    uart_get_hw(uart1)->rsr = 0;
+}
+
+// --- Блочный приём на UART0 с прерыванием (3.3.4) ---
+
+volatile uint8_t platform_block_count = 0;
+static uint8_t block_buffer[PLATFORM_BLOCK_SIZE];
+
+// Обработчик прерывания приёма UART0: забирает байты из очереди
+// в буфер, пока передача идёт. Без печати и ожиданий.
+static void __isr uart0_rx_handler(void)
+{
+    uart_get_hw(uart0)->icr = UART_UARTICR_RXIC_BITS;
+    while (uart_is_readable(uart0) && platform_block_count < PLATFORM_BLOCK_SIZE)
+    {
+        block_buffer[platform_block_count] = (uint8_t)(uart_get_hw(uart0)->dr & 0xFF);
+        platform_block_count = platform_block_count + 1;
+    }
+}
+
+void platform_uart0_irq_enable(bool enable)
+{
+    if (enable)
+    {
+        irq_set_exclusive_handler(UART0_IRQ, uart0_rx_handler);
+        uart_get_hw(uart0)->imsc |= UART_UARTIMSC_RXIM_BITS;
+        irq_set_enabled(UART0_IRQ, true);
+    }
+    else
+    {
+        uart_get_hw(uart0)->imsc &= ~UART_UARTIMSC_RXIM_BITS;
+        irq_set_enabled(UART0_IRQ, false);
+    }
+}
+
+const uint8_t *platform_block_data(void)
+{
+    return block_buffer;
+}
+
+void platform_uart0_drain_rx(void)
+{
+    while (uart_is_readable(uart0))
+    {
+        (void)uart_get_hw(uart0)->dr;
+    }
+    uart_get_hw(uart0)->rsr = 0;
 }

@@ -1,0 +1,82 @@
+задание: 3.3.3
+проект: 331-uart
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-13T19:29:36
+   0.000 --> 
+   0.555 --> help
+   0.621 <-- help
+   0.621 <-- help             list of commands
+   0.621 <-- info             device passport
+   0.621 <-- uptime           time since reset
+   0.621 <-- led_enable       turn LED on
+   0.621 <-- led_disable      turn LED off
+   0.621 <-- led_blink        blink LED
+   0.621 <-- led_period       set blink period, ms
+   0.621 <-- button           button state and press count
+   0.621 <-- pi_start         start pi calculation
+   0.621 <-- pi               last pi result
+   0.621 <-- edge             measure RC edges, pp|od
+   0.621 <-- loop             UART loopback mode
+   0.621 <-- echo             send text through UART
+   0.621 <-- link             send text both ways
+   0.621 <-- baud_shift       shift uart1 baud, %
+   0.621 <-- text             send 32 chars uart1->0
+   0.621 <-- parity           set parity rx tx
+   0.621 <-- block            64-byte block, irq|poll
+   0.621 <-- profiling        stopwatch results
+   0.621 <-- profiling_reset  reset stopwatches
+   1.592 --> link ping
+   1.651 <-- link ping
+   1.651 <-- 0->1: ping err: none
+   1.651 <-- 1->0: ping err: none
+   2.597 --> parity none none
+   2.662 <-- parity none none
+   2.662 <-- parity: rx none, tx none
+   3.107 --> baud_shift 0
+   3.164 <-- baud_shift 0
+   3.164 <-- baud_shift: uart1 115207 baud
+   3.619 --> text
+   3.675 <-- text
+   3.675 <-- text: 32 chars 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+   5.120 --> baud_shift 2
+   5.175 <-- baud_shift 2
+   5.175 <-- baud_shift: uart1 117508 baud
+   5.648 --> text
+   5.705 <-- text
+   5.705 <-- text: 32 chars 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+   7.171 --> baud_shift -2
+   7.228 <-- baud_shift -2
+   7.228 <-- baud_shift: uart1 112892 baud
+   7.685 --> text
+   7.735 <-- text
+   7.735 <-- text: 32 chars 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+   9.238 --> baud_shift -10
+   9.295 <-- baud_shift -10
+   9.295 <-- baud_shift: uart1 103669 baud
+   9.751 --> text
+   9.808 <-- text
+   9.808 <-- text: 32 chars pqrstuvwxy���������������������� err: FE
+  11.257 --> baud_shift 0
+  11.313 <-- baud_shift 0
+  11.313 <-- baud_shift: uart1 115207 baud
+  11.784 --> parity even odd
+  11.841 <-- parity even odd
+  11.841 <-- parity: rx even, tx odd
+  12.323 --> text
+  12.388 <-- text
+  12.388 <-- text: 32 chars 0123456789ABCDEFGHIJKLMNOPQRSTUV err: PE
+  13.867 --> parity none none
+  13.923 <-- parity none none
+  13.923 <-- parity: rx none, tx none
+  14.376 --> text
+  14.440 <-- text
+  14.440 <-- text: 32 chars 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+  15.884 --> baud_shift 60
+  15.941 <-- baud_shift 60
+  15.941 <-- error: percent must be -50..50
+  16.389 --> parity none
+  16.448 <-- parity none
+  16.448 <-- error: usage parity <rx> <tx>
+итог: отправлено кадров 19, принято строк 56

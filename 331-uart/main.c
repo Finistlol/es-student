@@ -1,5 +1,6 @@
-#include "firmware.h"
+#include <stdio.h>
 
+#include "firmware.h"
 #include "logging/log.h"
 
 #include "platform/platform.h"
@@ -13,7 +14,6 @@
 #include "edge-task/edge-task.h"
 #include "uart-task/uart-task.h"
 
-// Номера секундомеров прибора.
 typedef enum
 {
     SW_LOOP,
@@ -22,10 +22,10 @@ typedef enum
     SW_BUTTON,
     SW_PI,
     SW_EDGE,
+    SW_UART,
     SW_COUNT
 } stopwatch_id_t;
 
-// Результат фронтов печатает api, задача отдаёт данные.
 static void edge_report(const edge_result_t *result)
 {
     if (result->rise_ms < 0)
@@ -38,12 +38,22 @@ static void edge_report(const edge_result_t *result)
            result->rise_ms, result->fall_ms);
 }
 
-// Результат обмена UART печатает api, задача отдаёт данные.
 static void uart_report(const uart_result_t *result)
 {
     printf("rx: %s err: %s\n",
            result->text,
            result->errors == 0 ? "none" : "overrun");
+}
+
+static void uart_block_report(const uart_block_result_t *result)
+{
+    const char *err = "none";
+    if (result->errors & 8) err = "OE";
+    else if (result->errors & 2) err = "PE";
+    else if (result->errors & 1) err = "FE";
+    printf("block %s: %d/%d match, err: %s\n",
+           result->irq_mode ? "irq" : "poll",
+           result->match_count, result->total, err);
 }
 
 int main(void)
@@ -57,11 +67,12 @@ int main(void)
     profiling_stopwatch_init(SW_BUTTON, "button");
     profiling_stopwatch_init(SW_PI, "pi");
     profiling_stopwatch_init(SW_EDGE, "edge");
+    profiling_stopwatch_init(SW_UART, "uart");
 
     led_task_init();
     button_task_init(led_task_next_state);
     edge_task_init(edge_report);
-    uart_task_init(uart_report);
+    uart_task_init(uart_report, uart_block_report);
 
     LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
@@ -77,22 +88,10 @@ int main(void)
             profiling_stop(SW_COMMAND);
         }
 
-        profiling_start(SW_LED);
         led_task_handle();
-        profiling_stop(SW_LED);
-
-        profiling_start(SW_BUTTON);
         button_task_handle();
-        profiling_stop(SW_BUTTON);
-
-        profiling_start(SW_PI);
         pi_task_handle();
-        profiling_stop(SW_PI);
-
-        profiling_start(SW_EDGE);
         edge_task_handle();
-        profiling_stop(SW_EDGE);
-
         uart_task_handle();
 
         profiling_stop(SW_LOOP);
