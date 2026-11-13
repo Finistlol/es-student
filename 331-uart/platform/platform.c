@@ -16,6 +16,8 @@
 
 static platform_drive_mode_t line_mode = PLATFORM_DRIVE_PP;
 
+static void platform_uart_setup(void);
+
 void platform_init(void)
 {
     stdio_init_all();
@@ -36,6 +38,8 @@ void platform_init(void)
     adc_init();
     adc_gpio_init(NODE_ADC_PIN);
     adc_select_input(NODE_ADC_CHANNEL);
+
+    platform_uart_setup();
 }
 
 void platform_led_set(bool on)
@@ -96,4 +100,79 @@ float platform_node_voltage_v(void)
     adc_select_input(NODE_ADC_CHANNEL);
     uint16_t code = adc_read();
     return (float)code * ADC_REF_V / ADC_LEVELS;
+}
+// --- UART0 ---
+
+#include "hardware/uart.h"
+
+#define UART_ID uart0
+#define UART_BAUDRATE 115200
+#define UART_TX_PIN 0
+#define UART_RX_PIN 1
+
+static void platform_uart_setup(void)
+{
+    uart_init(uart0, 115200);
+    // По умолчанию — внутренняя петля, выводы модулю не отданы.
+    platform_uart_loop_internal(true);
+}
+
+void platform_uart_loop_internal(bool enable)
+{
+    if (enable)
+    {
+        // Петля внутри модуля: выводы не нужны модулю.
+        gpio_set_function(UART_TX_PIN, GPIO_FUNC_NULL);
+        gpio_set_function(UART_RX_PIN, GPIO_FUNC_NULL);
+        hw_set_bits(&uart_get_hw(UART_ID)->cr, UART_UARTCR_LBE_BITS);
+    }
+    else
+    {
+        // Петля через выводы: GP0 и GP1 отданы модулю UART.
+        hw_clear_bits(&uart_get_hw(UART_ID)->cr, UART_UARTCR_LBE_BITS);
+        gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+        gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+    }
+
+    // Смена режима оставляет в очередях приёма мусор от переходного
+    // процесса на линии: очереди сбрасываются.
+    uart_get_hw(UART_ID)->cr &= ~UART_UARTCR_UARTEN_BITS;
+    uart_get_hw(UART_ID)->lcr_h &= ~UART_UARTLCR_H_FEN_BITS;
+    uart_get_hw(UART_ID)->lcr_h |= UART_UARTLCR_H_FEN_BITS;
+    uart_get_hw(UART_ID)->cr |= UART_UARTCR_UARTEN_BITS;
+    // Признаки ошибок от переходного процесса тоже сбрасываются.
+    uart_get_hw(UART_ID)->rsr = 0;
+}
+
+bool platform_uart_writable(void)
+{
+    return uart_is_writable(UART_ID);
+}
+
+bool platform_uart_putc(char c)
+{
+    if (!uart_is_writable(UART_ID))
+    {
+        return false;
+    }
+    uart_get_hw(UART_ID)->dr = (uint8_t)c;
+    return true;
+}
+
+int platform_uart_getc(void)
+{
+    if (!uart_is_readable(UART_ID))
+    {
+        return -1;
+    }
+    return (int)(uart_get_hw(UART_ID)->dr & 0xFF);
+}
+
+uint32_t platform_uart_errors(void)
+{
+    // UARTRSR и UARTECR — один адрес: чтение даёт признаки,
+    // запись сбрасывает их.
+    uint32_t rsr = uart_get_hw(UART_ID)->rsr;
+    uart_get_hw(UART_ID)->rsr = 0;
+    return rsr;
 }

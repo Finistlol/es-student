@@ -5,11 +5,13 @@
 #include <string.h>
 
 #include "device/device.h"
+#include "platform/platform.h"
 #include "firmware.h"
 #include "led-task/led-task.h"
 #include "button-task/button-task.h"
 #include "pi-task/pi-task.h"
 #include "edge-task/edge-task.h"
+#include "uart-task/uart-task.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
 
@@ -201,6 +203,51 @@ static void cmd_edge(const command_t *command)
     }
 }
 
+static void cmd_loop(const command_t *command)
+{
+    if (command->argc != 1)
+    {
+        printf("error: usage loop internal|pins\n");
+        return;
+    }
+
+    if (strcmp(command->argv[0], "internal") == 0)
+    {
+        platform_uart_loop_internal(true);
+        printf("loop: internal\n");
+    }
+    else if (strcmp(command->argv[0], "pins") == 0)
+    {
+        platform_uart_loop_internal(false);
+        printf("loop: pins\n");
+    }
+    else
+    {
+        printf("error: usage loop internal|pins\n");
+    }
+}
+
+static void cmd_echo(const command_t *command)
+{
+    if (command->argc != 1)
+    {
+        printf("error: usage echo <text>\n");
+        return;
+    }
+
+    size_t len = strlen(command->argv[0]);
+    if (len > 32)
+    {
+        printf("error: text longer than 32\n");
+        return;
+    }
+
+    if (!uart_task_echo(command->argv[0], (uint8_t)len))
+    {
+        printf("error: uart is busy\n");
+    }
+}
+
 static void cmd_profiling(const command_t *command)
 {
     (void)command;
@@ -242,6 +289,8 @@ const api_command_t api_commands[] = {
     { "pi_start", "start pi calculation", cmd_pi_start },
     { "pi", "last pi result", cmd_pi },
     { "edge", "measure RC edges, pp|od", cmd_edge },
+    { "loop", "UART loopback mode", cmd_loop },
+    { "echo", "send text through UART", cmd_echo },
     { "profiling", "stopwatch results", cmd_profiling },
     { "profiling_reset", "reset stopwatches", cmd_profiling_reset },
 };

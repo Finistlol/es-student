@@ -1,0 +1,52 @@
+задание: 3.3.2
+проект: 331-uart
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-13T18:31:31
+   0.000 --> 
+   0.553 --> help
+   0.607 <-- help
+   0.607 <-- help             list of commands
+   0.607 <-- info             device passport
+   0.607 <-- uptime           time since reset
+   0.607 <-- led_enable       turn LED on
+   0.607 <-- led_disable      turn LED off
+   0.607 <-- led_blink        blink LED
+   0.607 <-- led_period       set blink period, ms
+   0.607 <-- button           button state and press count
+   0.607 <-- pi_start         start pi calculation
+   0.607 <-- pi               last pi result
+   0.607 <-- edge             measure RC edges, pp|od
+   0.607 <-- loop             UART loopback mode
+   0.607 <-- echo             send text through UART
+   0.607 <-- profiling        stopwatch results
+   0.607 <-- profiling_reset  reset stopwatches
+   1.572 --> loop internal
+   1.629 <-- loop internal
+   1.629 <-- loop: internal
+   2.079 --> echo ping
+   2.130 <-- echo ping
+   2.130 <-- rx: ping err: none
+   3.112 --> echo 0123456789ABCDEFGHIJKLMNOPQRSTUV
+   3.175 <-- echo 0123456789ABCDEFGHIJKLMNOPQRSTUV
+   3.175 <-- rx: 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+   4.613 --> loop pins
+   4.665 <-- loop pins
+   4.665 <-- loop: pins
+   5.177 --> echo ping
+   5.239 <-- echo ping
+   5.239 <-- rx: ping err: none
+   6.218 --> echo 0123456789ABCDEFGHIJKLMNOPQRSTUV
+   6.280 <-- echo 0123456789ABCDEFGHIJKLMNOPQRSTUV
+   6.280 <-- rx: 0123456789ABCDEFGHIJKLMNOPQRSTUV err: none
+   7.760 --> echo 0123456789ABCDEFGHIJKLMNOPQRSTUVX
+   7.816 <-- echo 0123456789ABCDEFGHIJKLMNOPQRSTUVX
+   7.816 <-- error: text longer than 32
+   8.308 --> echo
+   8.363 <-- echo
+   8.363 <-- error: usage echo <text>
+   8.815 --> loop xx
+   8.872 <-- loop xx
+   8.872 <-- error: usage loop internal|pins
+итог: отправлено кадров 11, принято строк 34

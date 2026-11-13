@@ -28,3 +28,12 @@ void platform_line_mode(platform_drive_mode_t mode);
 void platform_line_set(bool high);
 // Напряжение узла RC-цепи через АЦП на GP26.
 float platform_node_voltage_v(void);
+// --- UART0: петля и обмен ---
+
+// Внутренняя петля (LBE): true = бит LBE стоит, выводы не отданы модулю.
+// Через перемычку: false = LBE снят, GP0 и GP1 отданы модулю UART.
+void platform_uart_loop_internal(bool enable);
+bool platform_uart_writable(void);
+bool platform_uart_putc(char c);
+int platform_uart_getc(void);
+uint32_t platform_uart_errors(void);

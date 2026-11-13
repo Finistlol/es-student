@@ -19,7 +19,7 @@ target_compile_definitions(device PRIVATE DEVICE_BOARD="${PICO_BOARD}")
 
 add_library(platform platform/platform.c)
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc)
+target_link_libraries(platform PRIVATE pico_stdio_headers hardware_gpio hardware_adc hardware_uart)
 
 # Логика прибора: команды и задачи. SDK не подключает.
 add_library(logic
@@ -29,6 +29,7 @@ add_library(logic
     logic/button-task/button-task.c
     logic/pi-task/pi-task.c
     logic/edge-task/edge-task.c
+    logic/uart-task/uart-task.c
 )
 target_include_directories(logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/logic)
 target_link_libraries(logic PUBLIC stdio_text_protocol)

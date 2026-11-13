@@ -11,6 +11,7 @@
 #include "button-task/button-task.h"
 #include "pi-task/pi-task.h"
 #include "edge-task/edge-task.h"
+#include "uart-task/uart-task.h"
 
 // Номера секундомеров прибора.
 typedef enum
@@ -37,6 +38,14 @@ static void edge_report(const edge_result_t *result)
            result->rise_ms, result->fall_ms);
 }
 
+// Результат обмена UART печатает api, задача отдаёт данные.
+static void uart_report(const uart_result_t *result)
+{
+    printf("rx: %s err: %s\n",
+           result->text,
+           result->errors == 0 ? "none" : "overrun");
+}
+
 int main(void)
 {
     platform_init();
@@ -52,6 +61,7 @@ int main(void)
     led_task_init();
     button_task_init(led_task_next_state);
     edge_task_init(edge_report);
+    uart_task_init(uart_report);
 
     LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
@@ -82,6 +92,8 @@ int main(void)
         profiling_start(SW_EDGE);
         edge_task_handle();
         profiling_stop(SW_EDGE);
+
+        uart_task_handle();
 
         profiling_stop(SW_LOOP);
     }
