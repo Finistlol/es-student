@@ -68,6 +68,7 @@ def write_log(board, exchange):
         log.write("устройство: %04x:%04x\n" % (board.vid, board.pid))
         log.write("серийный номер: " + str(board.serial_number) + "\n")
         log.write("порт: " + board.device + "\n")
+        log.write("конденсатор, мкФ: 4.7\n")
         log.write("начало: " + datetime.now().isoformat(timespec="seconds") + "\n")
         for moment, direction, text in exchange:
             log.write("%8.3f %s %s\n" % (moment, direction, text))

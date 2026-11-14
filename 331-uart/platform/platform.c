@@ -376,3 +376,12 @@ void platform_scope_set_uart_baud(uint32_t baud)
     uart_set_baudrate(uart0, baud);
     uart_set_baudrate(uart1, baud);
 }
+
+void platform_line_release_tx_noise(void)
+{
+    // Провод GP0 — GP26 мешает измерению: UART TX держит 3,3 В на узле.
+    // Отдаём GP0 в третье состояние, чтобы не влиял на RC-цепь.
+    gpio_set_function(0, GPIO_FUNC_NULL);
+    gpio_disable_pulls(0);
+    gpio_set_dir(0, GPIO_IN);
+}

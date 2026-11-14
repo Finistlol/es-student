@@ -43,6 +43,8 @@ bool edge_task_measure(bool open_drain)
     }
 
     result.open_drain = open_drain;
+    platform_line_release_tx_noise();
+
     platform_line_mode(open_drain ? PLATFORM_DRIVE_OD : PLATFORM_DRIVE_PP);
     platform_line_set(false);
     started_us = systime_us();

@@ -65,3 +65,6 @@ bool platform_scope_capture(uint32_t samples);
 bool platform_scope_ready(void);
 void platform_scope_result(uint32_t *samples, const uint16_t **codes);
 void platform_scope_set_uart_baud(uint32_t baud);
+
+// Освобождает GP0 от UART: провод GP0 — GP26 мешает измерению RC-цепи.
+void platform_line_release_tx_noise(void);

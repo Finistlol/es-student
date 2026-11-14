@@ -3,57 +3,58 @@
 устройство: 2e8a:000a
 серийный номер: 5303284728F62C9C
 порт: COM7
-начало: 2026-11-14T19:08:39
+конденсатор, мкФ: 4.7
+начало: 2026-11-14T20:17:32
    0.000 --> 
-   0.551 --> help
-   0.608 <-- help
-   0.608 <-- help             list of commands
-   0.608 <-- info             device passport
-   0.608 <-- uptime           time since reset
-   0.608 <-- led_enable       turn LED on
-   0.608 <-- led_disable      turn LED off
-   0.608 <-- led_blink        blink LED
-   0.608 <-- led_period       set blink period, ms
-   0.608 <-- button           button state and press count
-   0.608 <-- pi_start         start pi calculation
-   0.608 <-- pi               last pi result
-   0.608 <-- edge             measure RC edges, pp|od
-   0.608 <-- loop             UART loopback mode
-   0.608 <-- echo             send text through UART
-   0.608 <-- link             send text both ways
-   0.608 <-- baud_shift       shift uart1 baud, %
-   0.608 <-- text             send 32 chars uart1->0
-   0.608 <-- parity           set parity rx tx
-   0.608 <-- block            64-byte block, irq|poll
-   0.608 <-- scope            capture UART waveform
-   0.608 <-- profiling        stopwatch results
-   0.608 <-- profiling_reset  reset stopwatches
-   1.566 --> info
-   1.622 <-- info
-   1.622 <-- name: es-uart-driver
-   1.622 <-- version: 1.0.0
-   1.622 <-- project: 331-uart
-   1.622 <-- repo: https://github.com/Finistlol/es-student
-   1.622 <-- board: pico
-   1.622 <-- serial: 5303284728F62C9C
-   1.622 <-- chip: manufacturer 0x927, part 0x0002, revision 2
-   1.622 <-- pico-sdk: 2.3.0
-   2.608 --> edge pp
-   2.663 <-- edge pp
-   4.617 <-- edge: timeout
-   5.120 --> edge od
-   5.172 <-- edge od
-   7.144 <-- edge: timeout
-  10.155 --> edge pp
-  10.213 <-- edge pp
-  12.212 <-- edge: timeout
-  12.678 --> edge od
-  12.739 <-- edge od
-  14.692 <-- edge: timeout
-  17.732 --> edge xx
-  17.788 <-- edge xx
-  17.788 <-- error: usage edge pp|od
-  18.253 --> edge
-  18.315 <-- edge
-  18.315 <-- error: usage edge pp|od
+   0.513 --> help
+   0.568 <-- help
+   0.568 <-- help             list of commands
+   0.568 <-- info             device passport
+   0.568 <-- uptime           time since reset
+   0.568 <-- led_enable       turn LED on
+   0.568 <-- led_disable      turn LED off
+   0.568 <-- led_blink        blink LED
+   0.568 <-- led_period       set blink period, ms
+   0.568 <-- button           button state and press count
+   0.568 <-- pi_start         start pi calculation
+   0.568 <-- pi               last pi result
+   0.568 <-- edge             measure RC edges, pp|od
+   0.568 <-- loop             UART loopback mode
+   0.568 <-- echo             send text through UART
+   0.568 <-- link             send text both ways
+   0.568 <-- baud_shift       shift uart1 baud, %
+   0.568 <-- text             send 32 chars uart1->0
+   0.568 <-- parity           set parity rx tx
+   0.568 <-- block            64-byte block, irq|poll
+   0.568 <-- scope            capture UART waveform
+   0.568 <-- profiling        stopwatch results
+   0.568 <-- profiling_reset  reset stopwatches
+   1.527 --> info
+   1.584 <-- info
+   1.584 <-- name: es-uart-driver
+   1.584 <-- version: 1.0.0
+   1.584 <-- project: 331-uart
+   1.584 <-- repo: https://github.com/Finistlol/es-student
+   1.584 <-- board: pico
+   1.584 <-- serial: 5303284728F62C9C
+   1.584 <-- chip: manufacturer 0x927, part 0x0002, revision 2
+   1.584 <-- pico-sdk: 2.3.0
+   2.578 --> edge pp
+   2.643 <-- edge pp
+   2.643 <-- edge pp: rise 4.4 ms, fall 3.9 ms
+   5.087 --> edge od
+   5.144 <-- edge od
+   5.478 <-- edge od: rise 177.7 ms, fall 3.9 ms
+  10.146 --> edge pp
+  10.201 <-- edge pp
+  10.201 <-- edge pp: rise 4.4 ms, fall 3.9 ms
+  12.674 --> edge od
+  12.736 <-- edge od
+  13.097 <-- edge od: rise 178.1 ms, fall 3.9 ms
+  17.716 --> edge xx
+  17.771 <-- edge xx
+  17.771 <-- error: usage edge pp|od
+  18.231 --> edge
+  18.285 <-- edge
+  18.285 <-- error: usage edge pp|od
 итог: отправлено кадров 9, принято строк 43
