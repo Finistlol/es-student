@@ -57,3 +57,11 @@ void platform_uart0_irq_enable(bool enable);
 extern volatile uint8_t platform_block_count;
 const uint8_t *platform_block_data(void);
 void platform_uart0_drain_rx(void);
+// --- 3.3.5: DMA-захват линии UART на GP26 (500 000 отсчётов/с) ---
+
+#define SCOPE_BLOCK_SIZE 4096
+
+bool platform_scope_capture(uint32_t samples);
+bool platform_scope_ready(void);
+void platform_scope_result(uint32_t *samples, const uint16_t **codes);
+void platform_scope_set_uart_baud(uint32_t baud);

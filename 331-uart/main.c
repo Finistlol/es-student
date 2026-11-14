@@ -13,6 +13,7 @@
 #include "pi-task/pi-task.h"
 #include "edge-task/edge-task.h"
 #include "uart-task/uart-task.h"
+#include "block-task/block-task.h"
 
 typedef enum
 {
@@ -40,9 +41,27 @@ static void edge_report(const edge_result_t *result)
 
 static void uart_report(const uart_result_t *result)
 {
-    printf("rx: %s err: %s\n",
-           result->text,
-           result->errors == 0 ? "none" : "overrun");
+    const char *err = "none";
+    if (result->errors & 1) err = "FE";
+    else if (result->errors & 2) err = "PE";
+    else if (result->errors & 8) err = "OE";
+
+    switch (result->direction)
+    {
+    case UART_DIR_0_1:
+        printf("0->1: %s err: %s\n", result->text, err);
+        break;
+    case UART_DIR_TEXT:
+        printf("text: 32 chars %s err: %s\n", result->text, err);
+        break;
+    case UART_DIR_1_0:
+        printf("1->0: %s err: %s\n", result->text, err);
+        break;
+    case UART_DIR_ECHO:
+    default:
+        printf("rx: %s err: %s\n", result->text, err);
+        break;
+    }
 }
 
 static void uart_block_report(const uart_block_result_t *result)
@@ -54,6 +73,21 @@ static void uart_block_report(const uart_block_result_t *result)
     printf("block %s: %d/%d match, err: %s\n",
            result->irq_mode ? "irq" : "poll",
            result->match_count, result->total, err);
+}
+
+static void scope_report(const scope_result_t *result)
+{
+    printf("scope: %lu samples, %lu Hz, %lu baud, uart1 %s err: %s\n",
+           (unsigned long)result->samples,
+           (unsigned long)result->rate_hz,
+           (unsigned long)result->baud,
+           result->text,
+           result->uart_errors == 0 ? "none" : "FE");
+    for (uint32_t i = 0; i < result->samples; i++)
+    {
+        printf("%u\n", (unsigned)result->codes[i]);
+    }
+    printf("scope: end\n");
 }
 
 int main(void)
@@ -73,6 +107,7 @@ int main(void)
     button_task_init(led_task_next_state);
     edge_task_init(edge_report);
     uart_task_init(uart_report, uart_block_report);
+    block_task_init(scope_report);
 
     LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
@@ -93,6 +128,7 @@ int main(void)
         pi_task_handle();
         edge_task_handle();
         uart_task_handle();
+        block_task_handle();
 
         profiling_stop(SW_LOOP);
     }

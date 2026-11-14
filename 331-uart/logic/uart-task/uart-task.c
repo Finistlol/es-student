@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "platform/platform.h"
 
@@ -237,11 +236,11 @@ void uart_task_handle(void)
         {
             result.text[result.length] = '\0';
             result.errors |= platform_uart1_errors();
-            // Первая половина готова — печатаем и переходим ко второй.
+            // Первая половина готова — отдаём через callback.
+            result.direction = UART_DIR_0_1;
             if (report != 0)
             {
-                printf("0->1: %s err: %s\n", result.text,
-                       result.errors == 0 ? "none" : "FE");
+                report(&result);
             }
             tx_sent = 0;
             result.length = 0;
@@ -270,20 +269,12 @@ void uart_task_handle(void)
         {
             result.text[result.length] = '\0';
             result.errors |= platform_uart_errors();
+            result.direction = text_mode ? UART_DIR_TEXT : UART_DIR_1_0;
+            text_mode = false;
             state = OP_IDLE;
-            if (text_mode)
+            if (report != 0)
             {
-                const char *err = "none";
-                if (result.errors & 1) err = "FE";
-                else if (result.errors & 2) err = "PE";
-                else if (result.errors & 8) err = "OE";
-                printf("text: 32 chars %s err: %s\n", result.text, err);
-                text_mode = false;
-            }
-            else if (report != 0)
-            {
-                printf("1->0: %s err: %s\n", result.text,
-                       result.errors == 0 ? "none" : "FE");
+                report(&result);
             }
         }
         return;

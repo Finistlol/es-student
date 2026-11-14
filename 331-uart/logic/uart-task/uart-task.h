@@ -7,8 +7,17 @@
 #define UART_TASK_BLOCK_SIZE 64
 
 // Результат обмена: принятая строка и признаки ошибок UARTRSR.
+typedef enum
+{
+    UART_DIR_ECHO,   // петля: rx
+    UART_DIR_0_1,    // UART0 -> UART1
+    UART_DIR_1_0,    // UART1 -> UART0
+    UART_DIR_TEXT,   // UART1 -> UART0 (32 символа)
+} uart_direction_t;
+
 typedef struct
 {
+    uart_direction_t direction;
     char text[UART_TASK_MAX_TEXT + 1];
     uint8_t length;
     uint32_t errors;

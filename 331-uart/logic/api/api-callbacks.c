@@ -12,6 +12,7 @@
 #include "pi-task/pi-task.h"
 #include "edge-task/edge-task.h"
 #include "uart-task/uart-task.h"
+#include "block-task/block-task.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
 
@@ -366,6 +367,36 @@ static void cmd_block(const command_t *command)
     }
 }
 
+static void cmd_scope(const command_t *command)
+{
+    uint32_t baud = 0;
+
+    if (command->argc != 2 || !parse_u32(command->argv[0], &baud))
+    {
+        printf("error: usage scope <baud> <text>\n");
+        return;
+    }
+
+    if (baud < 9600 || baud > 115200)
+    {
+        printf("error: usage scope <baud> <text>\n");
+        return;
+    }
+
+    const char *text = command->argv[1];
+    size_t len = strlen(text);
+    if (len == 0 || len > 4)
+    {
+        printf("error: usage scope <baud> <text>\n");
+        return;
+    }
+
+    if (!block_task_start(baud, text, (uint8_t)len))
+    {
+        printf("error: scope is busy\n");
+    }
+}
+
 static void cmd_profiling(const command_t *command)
 {
     (void)command;
@@ -414,6 +445,7 @@ const api_command_t api_commands[] = {
     { "text", "send 32 chars uart1->0", cmd_text },
     { "parity", "set parity rx tx", cmd_parity },
     { "block", "64-byte block, irq|poll", cmd_block },
+    { "scope", "capture UART waveform", cmd_scope },
     { "profiling", "stopwatch results", cmd_profiling },
     { "profiling_reset", "reset stopwatches", cmd_profiling_reset },
 };

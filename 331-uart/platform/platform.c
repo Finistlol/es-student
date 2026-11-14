@@ -303,3 +303,76 @@ void platform_uart0_drain_rx(void)
     }
     uart_get_hw(uart0)->rsr = 0;
 }
+
+// --- 3.3.5: DMA-захват на пределе АЦП ---
+
+#include "hardware/dma.h"
+
+static uint16_t scope_buf[SCOPE_BLOCK_SIZE];
+static volatile bool scope_done = false;
+static uint32_t scope_samples = 0;
+static int scope_channel = -1;
+
+static void __isr scope_dma_handler(void)
+{
+    dma_hw->ints0 = 1u << scope_channel;
+    scope_done = true;
+    adc_run(false);
+    adc_fifo_drain();
+}
+
+bool platform_scope_capture(uint32_t samples)
+{
+    if (scope_channel < 0)
+    {
+        scope_channel = (int)dma_claim_unused_channel(false);
+        irq_set_exclusive_handler(DMA_IRQ_0, scope_dma_handler);
+        irq_set_enabled(DMA_IRQ_0, true);
+    }
+
+    if (samples == 0 || samples > SCOPE_BLOCK_SIZE)
+    {
+        return false;
+    }
+
+    scope_samples = samples;
+    scope_done = false;
+
+    // АЦП на пределе: делитель 0, преобразования идут подряд.
+    adc_select_input(NODE_ADC_CHANNEL);
+    adc_fifo_setup(true, true, 1, false, false);
+    adc_set_clkdiv(0);
+
+    dma_channel_config config = dma_channel_get_default_config(scope_channel);
+    channel_config_set_transfer_data_size(&config, DMA_SIZE_16);
+    channel_config_set_read_increment(&config, false);
+    channel_config_set_write_increment(&config, true);
+    channel_config_set_dreq(&config, DREQ_ADC);
+
+    dma_channel_configure(scope_channel, &config,
+                          scope_buf, &adc_hw->fifo, samples, false);
+    dma_channel_set_irq0_enabled(scope_channel, true);
+    dma_channel_acknowledge_irq0(scope_channel);
+
+    adc_fifo_drain();
+    dma_channel_start(scope_channel);
+    adc_run(true);
+    return true;
+}
+
+bool platform_scope_ready(void)
+{
+    return scope_done;
+}
+
+void platform_scope_result(uint32_t *samples, const uint16_t **codes)
+{
+    *samples = scope_samples;
+    *codes = scope_buf;
+}
+
+void platform_scope_set_uart_baud(uint32_t baud)
+{
+    uart_set_baudrate(uart0, baud);
+    uart_set_baudrate(uart1, baud);
+}
