@@ -8,14 +8,60 @@ on:
       - '.github/workflows/check-3-3-5.yml'
   workflow_dispatch:
 
-# Пока идёт отладка, пушей подряд бывает много: в работе остаётся последний,
-# предыдущие прогоны той же проверки отменяются.
+# Временно не вызываем воркфлоу ant-lab-ru/es-test, а повторяем его шаги здесь:
+# в es-test@master скрипт check-3-3-5.sh добавлен без права исполнения (100644),
+# и вызов падает с Permission denied. Отличие от оригинала — один шаг chmod +x.
+# Когда авторы исправят бит, вернуть вызов uses: ant-lab-ru/es-test/.github/workflows/check-3-3-5.yml@master.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   check:
-    uses: ant-lab-ru/es-test/.github/workflows/check-3-3-5.yml@master
-    secrets:
-      ES_ACCOUNT_SECRET: ${{ secrets.ES_ACCOUNT_SECRET }}
+    name: Осциллограмма линии UART
+    runs-on: ubuntu-latest
+    steps:
+      - name: Репозиторий обучающегося
+        uses: actions/checkout@v7
+        with:
+          path: student
+
+      - name: Проверки курса
+        uses: actions/checkout@v7
+        with:
+          repository: ant-lab-ru/es-test
+          path: es-test
+
+      - name: Инструменты сборки
+        uses: ant-lab-ru/es-test/.github/actions/pico-toolchain@master
+
+      - name: Право исполнения скрипта проверки
+        run: chmod +x es-test/checks/check-3-3-5.sh
+
+      - name: Проверка
+        run: es-test/checks/check-3-3-5.sh student "331-uart"
+        env:
+          CHECKS_JSON: ${{ runner.temp }}/report.json
+
+      - name: Отправка результата на платформу
+        if: always()
+        env:
+          LMS_URL: https://es.ant-lab.ru/api/results/
+          ES_ACCOUNT_SECRET: ${{ secrets.ES_ACCOUNT_SECRET }}
+          REPORT: ${{ runner.temp }}/report.json
+        run: |
+          if [ -z "$LMS_URL" ] || [ -z "$ES_ACCOUNT_SECRET" ]; then
+            echo "Приёмник или секрет не заданы — отправка пропущена."
+            exit 0
+          fi
+          if [ ! -f "$REPORT" ]; then
+            echo "Отчёт не сформирован — отправлять нечего."
+            exit 0
+          fi
+          code=$(curl -sS -o response.txt -w '%{http_code}' -X POST "$LMS_URL" \
+            -H "Authorization: Bearer $ES_ACCOUNT_SECRET" \
+            -H 'Content-Type: application/json' \
+            --data @"$REPORT")
+          echo "Ответ платформы: $code"
+          cat response.txt; echo
+          [ "$code" = "200" ]
