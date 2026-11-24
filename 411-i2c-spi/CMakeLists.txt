@@ -17,6 +17,7 @@ target_link_libraries(platform PRIVATE
     hardware_i2c
     hardware_spi
     pico_multicore
+    pico_i2c_slave
 )
 
 add_library(logic STATIC

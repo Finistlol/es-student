@@ -26,11 +26,15 @@ uint8_t platform_spi_read(uint8_t cs, uint8_t command, uint8_t pause_us);
 // Запускает функцию на ядре 1.
 void platform_start_core1(void (*entry)(void));
 
-// Настраивает периферию ведомого: светодиод, а позже I²C1 и SPI1.
-void platform_slave_init(void);
+// Функция чтения регистра ведомого устройства.
+typedef uint8_t (*platform_register_read_t)(uint8_t reg);
+
+// Функция записи регистра ведомого устройства.
+typedef void (*platform_register_write_t)(uint8_t reg, uint8_t value);
+
+// Настраивает периферию ведомого: светодиод и I²C1 на заданном адресе.
+void platform_slave_init(uint8_t address, platform_register_read_t read_register,
+                         platform_register_write_t write_register);
 
 // Управляет светодиодом со стороны ведомого.
 void platform_led_set(bool on);
-
-// Время с загрузки прошивки в миллисекундах.
-uint32_t platform_time_ms(void);
