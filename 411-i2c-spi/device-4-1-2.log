@@ -1,0 +1,17 @@
+задание: 4.1.2
+режим SPI: без датчика
+проект: 411-i2c-spi
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-24T08:11:41
+   0.000 --> help
+   0.001 <-- help
+   0.003 <-- help             list of commands
+   0.004 <-- i2c_write_reg    <address> <register> <value>
+   0.005 <-- i2c_read_reg     <address> <register>
+   0.009 <-- spi_write        <cs> <command> <value>
+   0.010 <-- spi_read         <cs> <command> [pause_us]
+   0.010 --> spi_read 0x00 0xD0
+   0.011 <-- spi_read 0x00 0xD0
+   0.018 <-- spi: cs 0x00 command 0xD0 value 0x00
