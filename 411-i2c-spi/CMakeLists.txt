@@ -16,11 +16,13 @@ target_link_libraries(platform PRIVATE
     pico_stdlib
     hardware_i2c
     hardware_spi
+    pico_multicore
 )
 
 add_library(logic STATIC
     logic/api/api.c
     logic/api/api-callbacks.c
+    logic/slave/slave.c
 )
 target_include_directories(logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/logic)
 target_link_libraries(logic

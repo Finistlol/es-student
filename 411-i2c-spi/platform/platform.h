@@ -22,3 +22,15 @@ void platform_spi_write(uint8_t cs, uint8_t command, uint8_t value);
 
 // Передаёт управляющий байт и принимает ответ; пауза между байтами в мкс.
 uint8_t platform_spi_read(uint8_t cs, uint8_t command, uint8_t pause_us);
+
+// Запускает функцию на ядре 1.
+void platform_start_core1(void (*entry)(void));
+
+// Настраивает периферию ведомого: светодиод, а позже I²C1 и SPI1.
+void platform_slave_init(void);
+
+// Управляет светодиодом со стороны ведомого.
+void platform_led_set(bool on);
+
+// Время с загрузки прошивки в миллисекундах.
+uint32_t platform_time_ms(void);
