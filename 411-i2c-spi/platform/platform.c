@@ -10,6 +10,7 @@ enum
     BUS_BAUD = 100000,
     I2C_TIMEOUT_US = 10000,
     SPI_CS_HOLD_US = 2,
+    SPI_SLAVE_CS = 13,
 };
 
 static const uint spi_cs_pins[PLATFORM_SPI_CS_COUNT] = {16, 5};
@@ -121,6 +122,36 @@ static void i2c_slave_event(i2c_inst_t *i2c, i2c_slave_event_t event)
     }
 }
 
+void platform_spi_slave_reset(void)
+{
+    spi_init(spi1, BUS_BAUD);
+    spi_set_format(spi1, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+    spi_set_slave(spi1, true);
+    // Первый принятый ведущим байт не содержит результата.
+    spi_get_hw(spi1)->dr = 0x00;
+}
+
+bool platform_spi_slave_selected(void)
+{
+    return !gpio_get(SPI_SLAVE_CS);
+}
+
+bool platform_spi_slave_receive(uint8_t *byte)
+{
+    if (!spi_is_readable(spi1))
+    {
+        return false;
+    }
+
+    *byte = (uint8_t)spi_get_hw(spi1)->dr;
+    return true;
+}
+
+void platform_spi_slave_reply(uint8_t byte)
+{
+    spi_get_hw(spi1)->dr = byte;
+}
+
 void platform_slave_init(uint8_t address, platform_register_read_t read_register,
                          platform_register_write_t write_register)
 {
@@ -136,6 +167,13 @@ void platform_slave_init(uint8_t address, platform_register_read_t read_register
     gpio_disable_pulls(7);
     gpio_set_function(7, GPIO_FUNC_I2C);   // SCL
     i2c_slave_init(i2c1, address, i2c_slave_event);
+
+    gpio_pull_up(SPI_SLAVE_CS);
+    gpio_set_function(10, GPIO_FUNC_SPI);  // SCK
+    gpio_set_function(11, GPIO_FUNC_SPI);  // MISO — выход ведомого
+    gpio_set_function(12, GPIO_FUNC_SPI);  // MOSI — вход ведомого
+    gpio_set_function(SPI_SLAVE_CS, GPIO_FUNC_SPI);
+    platform_spi_slave_reset();
 }
 
 void platform_led_set(bool on)

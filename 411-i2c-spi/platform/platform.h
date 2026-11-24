@@ -38,3 +38,15 @@ void platform_slave_init(uint8_t address, platform_register_read_t read_register
 
 // Управляет светодиодом со стороны ведомого.
 void platform_led_set(bool on);
+
+// Готовит SPI1 к приёму нового кадра ведомым.
+void platform_spi_slave_reset(void);
+
+// Истинно, пока ведущий держит CS низким.
+bool platform_spi_slave_selected(void);
+
+// Забирает байт из очереди приёма SPI1, если он есть.
+bool platform_spi_slave_receive(uint8_t *byte);
+
+// Кладёт байт ответа в очередь передачи SPI1.
+void platform_spi_slave_reply(uint8_t byte);
