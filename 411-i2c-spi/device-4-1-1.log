@@ -1,0 +1,14 @@
+задание: 4.1.1
+проект: 411-i2c-spi
+устройство: 2e8a:000a
+серийный номер: 5303284728F62C9C
+порт: COM7
+начало: 2026-11-24T08:05:48
+   0.000 --> help
+   0.008 <-- help
+   0.009 <-- help             list of commands
+   0.009 <-- i2c_write_reg    <address> <register> <value>
+   0.010 <-- i2c_read_reg     <address> <register>
+   0.010 --> i2c_read_reg 0x76 0xD0
+   0.011 <-- i2c_read_reg 0x76 0xD0
+   0.012 <-- i2c: addr 0x76 reg 0xD0 value 0x60
